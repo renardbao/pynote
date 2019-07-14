@@ -2,16 +2,13 @@
 title: "numpy.ravel()"
 author: "RenardBao"
 date: "2019/7/12"
-output: html_document
+output: 
+  prettydoc::html_pretty:
+    theme: cayman 
 ---
 提到numpy.ravel(),順手也查了一下numpy.flatten(),來比較兩者的差異.
 
 * ravel() & flatten()兩者都是將多維降至一維(muti-d to 1d).
-
-#### Difference
-
-* ravel()傳回一個view,會影響原本的矩陣.
-* flatten()傳回一個copy,不會影響原本的矩陣.
 
 其中參數order:{'C','F','A','K'}
 
@@ -23,8 +20,6 @@ output: html_document
 ```{python}
 import numpy as np
 y = np.array(((1,3,5),(3,3,3),(7,8,9)))
-y.ravel()
-y.flatten()
 y.ravel(order = 'F')
 y.ravel(order = 'C')
 y.ravel(order = 'A')
@@ -32,11 +27,21 @@ y.ravel(order = 'K')
 
 ```
 
+
+#### Difference
+
+* ravel()傳回一個view,會影響原本的矩陣.
+* flatten()傳回一個copy,不會影響原本的矩陣.
+
 ```{python}
-arr = np.arange(12).reshape(3,4)
-arr
-arr.T
+y.flatten()[1] = 999
+y
+y.ravel()[1] = 999
+y
 ```
+
+
+
 
 
 
