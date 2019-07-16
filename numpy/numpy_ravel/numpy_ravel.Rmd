@@ -13,10 +13,12 @@ output:
 其中參數order:{'C','F','A','K'}
 
 * C 會根據C-style排序.  
-* F 會根據列優先排序,也就是Fortran-style.
+* F 會根據列優先排序,也就是Fortran-style. [C-style & Fortran-style解說](https://renardbao.github.io/pynote/numpy/contiguous_type/contiguous_type.html)
 * A 會根據陣列在記憶體是哪種style來排列.
 * K 則根據在記憶體順序排列.
-   
+
+
+
 ```{python}
 import numpy as np
 y = np.array(((1,3,5),(3,3,3),(7,8,9)))
@@ -40,8 +42,25 @@ y.ravel()[1] = 999
 y
 ```
 
+#### 例外
 
+`array.T.ravel()`
 
+其實也不算例外,`ravel()`本身就有回傳copy的功能.
+
+根據這篇 [stackoverflow](https://stackoverflow.com/questions/54166169/a-transpose-ravel0-x-cannot-change-value-of-original-array-in-numpy),`numpy.ravel()`是有可能回傳copy,其回傳copy的條件:  
+
+* input array 不是`contiguous` 或是    
+* input array 的`contiguous type`和輸入給`ravel()`的type參數不一致. 
+所以`array.T.ravel()`會是回傳copy(`ravel()`的type參數預設是'C'),但是`array.T.ravel('F')`則是回傳view.
+
+下面舉另一個例子,y本身是`C contiguous`,但是type改成'F',`ravel()`就回傳copy了.
+
+```{python}
+y.ravel('F')[2] = 999 #return copy
+y
+y.flags
+```
 
 
 

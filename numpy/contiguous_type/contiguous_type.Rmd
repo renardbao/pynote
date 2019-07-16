@@ -1,0 +1,135 @@
+---
+title: "contiguous array"
+author: "RenardBao"
+date: "2019/7/15"
+output:
+    prettydoc::html_pretty:
+    theme: cayman   
+---
+
+## 摘要
+
+`C contiguous`:是指以行為優先的順序（Row-major Order),在記憶體裡面是以行存在一起.  
+`Fortran contiguous`:是指以列為優先的順序（Column-major Order),在記憶體裡面是以列存在一起.
+
+## 詳細解說
+來源[stackoverflow](https://stackoverflow.com/questions/26998223/what-is-the-difference-between-contiguous-and-non-contiguous-arrays):
+
+contiguous array指的是陣列在記憶體中存放的地址是連續的，提取陣列的下一個值，直接移動到記憶體的下一個地址。
+
+
+假設一個2維的`array: arr = np.arange(12).reshape(3,4)`。這個陣列的結構是長這樣：
+
+```{r p1, echo=FALSE,out.width = '25%'}
+
+knitr::include_graphics("p1.png")
+
+```
+
+```{python}
+import numpy as np
+arr = np.arange(12).reshape(3,4)
+arr
+```
+
+
+在電腦記憶體裡，陣列arr實際儲存是像下圖所示：
+
+```{r p2, echo=FALSE,out.width = '75%'}
+
+knitr::include_graphics("p2.png")
+
+```
+
+這表示arr是C contiguous的,是指行跟行是連續的被儲存在記憶體.如果我們要從第一列第一個跳到第二列的第一個,那我們得跳過三格(上圖來說,0跳到4得略過1,2,3).
+
+如果我們透過arr.T來轉置矩陣,則`C contiguous`就消失了,取而代之的是`Fortran contiguous`,因為同一列的值不再是相鄰的儲存位置.
+
+```{r p3, echo=FALSE,out.width = '20%'}
+
+knitr::include_graphics("p3.png")
+
+```
+
+
+```{python}
+arr.T
+```
+
+所以對`C contiguous`的陣列來說(Row-major Order),對其以行來進行操作會比對列操作要快上一點.
+
+
+```{python}
+arr1 =  np.arange(100000000).reshape(10000,10000)
+
+from timeit import timeit
+
+def sum_row():
+  np.sum(arr1, axis=1)
+  
+t = timeit('sum_row()','from __main__ import sum_row', number=1)
+print("sum the rows :",t)
+
+def sum_col():
+  np.sum(arr1, axis=0)
+  
+t2 = timeit('sum_col()','from __main__ import sum_col', number=1)
+print("sum the columns :",t2)
+
+
+```
+
+相反的,對`Fortran contiguous`陣列進行列的操作會比行的操作還快.
+
+
+```{python}
+arr2 = arr1.T
+
+def sum_row():
+  np.sum(arr2, axis=1)
+t3 = timeit('sum_row()','from __main__ import sum_row', number=1)
+print("sum the rows :",t3)
+
+def sum_col():
+  np.sum(arr2, axis=0)
+  
+t4 = timeit('sum_col()','from __main__ import sum_col', number=1)
+print("sum the columns :",t4)
+
+
+```
+
+
+那直接對轉置過的矩陣進行shape的操作呢?
+
+```{python,error = TRUE}
+arr3 = arr.T
+arr3.shape = 12 
+```
+ERROR:`AttributeError: incompatible shape for a non-contiguous array`
+
+因為numpy要將arr.T的結構弄成這樣:
+
+```{r p4, echo=FALSE,out.width = '75%'}
+
+knitr::include_graphics("p4.png")
+
+```
+
+直接設置shape,其必須是`C contiguous`,numpy幾乎都是運行以行優先.  
+所以有兩種方法可以達到`arr.T`的一維展開:
+
+* `arr3.reshape(12)`
+* `arr3.flatten('C')`
+
+numpy.ravel()是也能達到一樣的效果,不過這邊要注意的是其回傳的是copy,除非`type = 'F'`.
+
+```{python}
+arr3.reshape(12)
+arr3.flatten('C')
+print('the flags of arr3.ravel("C")\n',
+arr3.ravel('C').flags)
+print('the flags of arr3.ravel("F")\n', arr3.ravel('F').flags)
+```
+
+
