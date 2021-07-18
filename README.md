@@ -5,4 +5,4 @@
 3. [numpy.ravel](https://renardbao.github.io/pynote/numpy/numpy_ravel/numpy_ravel.html)
 
 ## other
-1. [itertools_combinations](https://renardbao.github.io/pynote/other/itertools_combinations .html)
+1. [itertools_combinations](https://renardbao.github.io/pynote/other/itertools_combinations.html)
